@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Emscripten-Generated Code</title>
+    <script type="text/javascript" src="interface.js"></script>
+    <style>
+      #canvas {
+        width: 400px;
+        height: 200px;
+        image-rendering: pixelated;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas" width="32" height="16"></canvas>
+    
+    <button id="somesteps">Run 1000 steps</button>
+    <button id="run1Hz">Run 1Hz steps</button>
+    <button id="audioStart">Audio Start</button>
+    <label id="steps">Steps: <span>0</span></label>
+    
+    <button class="interface-btn" data-value="0">LEFT</button>
+    <button class="interface-btn" data-value="1">MIDDLE</button>
+    <button class="interface-btn" data-value="2">RIGHT</button>
+
+    <script type="text/javascript">
+      let interval = -1;
+      let stepCount = 0;
+
+      window.Module = {};
+      Module.onRuntimeInitialized = () => {
+        console.log('onRuntimeInitialized');
+        const _step = Module.cwrap('void_tama_step');
+        window.step = (n = 1) => {
+          stepCount += n;
+          _step(n);
+        };
+
+        window.pressButton = Module.cwrap('void_tama_button');
+      };
+
+      const stepCountLabel = document.querySelector('#steps>span');
+      document.getElementById('somesteps').onclick = () => {
+        if (interval >= 0) clearInterval(interval);        
+        step(1000);
+        stepCountLabel.innerHTML = stepCount;
+      };
+
+      document.getElementById('run1Hz').onclick = () => {
+        interval = setInterval(() => {
+          step(200);          
+          stepCountLabel.innerHTML = stepCount;
+        }, 33);
+      };
+
+      document.getElementById('audioStart').onclick = () => window.Tama.audioStart();
+
+      document.querySelectorAll('.interface-btn').forEach(btn => {
+        const value = parseInt(btn.dataset.value, 10);
+        btn.onmousedown = () => window.pressButton(value, 1);
+        btn.onmouseup = () => window.pressButton(value, 0);
+      });
+
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      ctx.imageSmoothingEnabled = false;
+
+      window.Tama = new TamaObject();
+
+      const updateLCD = () => {
+        window.Tama.draw(ctx);
+        window.requestAnimationFrame(updateLCD);
+      };
+
+      window.requestAnimationFrame(updateLCD);
+    </script>
+    <script async type="text/javascript" src="../build/tama.js"></script>
+  </body>
+</html>
