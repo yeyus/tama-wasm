@@ -32,6 +32,11 @@
       window.Module = {};
       Module.onRuntimeInitialized = () => {
         console.log('onRuntimeInitialized');
+        const _run_for = Module.cwrap('u32t_tama_run_for');
+        window.runFor = (ms = 33) => {
+          stepCount += _run_for(ms);
+        };
+
         const _step = Module.cwrap('void_tama_step');
         window.step = (n = 1) => {
           stepCount += n;
@@ -48,11 +53,12 @@
         stepCountLabel.innerHTML = stepCount;
       };
 
+      const UPDATE_RATE_MS = 33;
       document.getElementById('run1Hz').onclick = () => {
         interval = setInterval(() => {
-          step(200);          
+          runFor(UPDATE_RATE_MS);
           stepCountLabel.innerHTML = stepCount;
-        }, 33);
+        }, UPDATE_RATE_MS);
       };
 
       document.getElementById('audioStart').onclick = () => window.Tama.audioStart();
