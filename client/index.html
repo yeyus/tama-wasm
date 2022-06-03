@@ -6,15 +6,57 @@
     <title>Emscripten-Generated Code</title>
     <script type="text/javascript" src="interface.js"></script>
     <style>
+      :root {
+        --tama-width: 400px;
+        --tama-background: bisque;
+      }
+
       #canvas {
-        width: 400px;
-        height: 200px;
+        width: var(--tama-width);
+        aspect-ratio: 2/1;
         image-rendering: pixelated;
+      }
+
+      .tama {
+        width: var(--tama-width);
+        background-color: var(--tama-background);
+      }
+
+      .tama .icon-bar {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        width: auto;
+        padding: 10px 0;
+      }
+
+      .tama .icon-bar .icon {
+        height: 40px;
+        opacity: 0.2;
+      }
+
+      .tama .icon-bar .icon.on {
+        opacity: 1;
       }
     </style>
   </head>
   <body>
-    <canvas id="canvas" width="32" height="16"></canvas>
+    <div class="tama">
+      <div class="icon-bar">
+        <img class="icon" src="assets/food.svg" alt="Food" data-icon=0 />
+        <img class="icon" src="assets/lights.svg" alt="Light" data-icon=1 />
+        <img class="icon" src="assets/games.svg" alt="Games" data-icon=2 />
+        <img class="icon" src="assets/medicine.svg" alt="Medicine" data-icon=3 />
+      </div>
+      <canvas id="canvas" width="32" height="16"></canvas>
+      <div class="icon-bar">
+        <img class="icon" src="assets/bath.svg" alt="Bath" data-icon=4 />
+        <img class="icon" src="assets/stats.svg" alt="Stats" data-icon=5 />
+        <img class="icon" src="assets/discipline.svg" alt="Discipline" data-icon=6 />
+        <img class="icon" src="assets/attention.svg" alt="Attention" data-icon=7 />
+      </div>
+    </div>
+    
     
     <button id="somesteps">Run 1000 steps</button>
     <button id="run1Hz">Run 1Hz steps</button>
@@ -44,6 +86,12 @@
         };
 
         window.pressButton = Module.cwrap('void_tama_button');
+
+        const _getMemory = Module.cwrap('u8tp_tama_get_memory', 'array', []);
+        window.getMemory = () => {
+          const ptrFromWasm = _getMemory();
+          return Module.HEAPU8.subarray(ptrFromWasm, ptrFromWasm + 464);
+        };
       };
 
       const stepCountLabel = document.querySelector('#steps>span');
@@ -70,13 +118,18 @@
       });
 
       const canvas = document.getElementById('canvas');
-      const ctx = canvas.getContext('2d');
-      ctx.imageSmoothingEnabled = false;
+      const canvasCtx = canvas.getContext('2d');
+      canvasCtx.imageSmoothingEnabled = false;
+      let icons = [];
+      document.querySelectorAll('.icon-bar .icon').forEach(iconElement => {
+        const index = parseInt(iconElement.dataset.icon, 10);
+        icons[index] = iconElement;
+      });
 
       window.Tama = new TamaObject();
 
       const updateLCD = () => {
-        window.Tama.draw(ctx);
+        window.Tama.draw(canvasCtx, icons);
         window.requestAnimationFrame(updateLCD);
       };
 

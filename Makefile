@@ -12,7 +12,7 @@ RES_PATH = ../res
 
 LDLIBS = 
 CFLAGS += -Wall -g -sASYNCIFY -O3
-EXPORTFLAGS += -sEXPORTED_FUNCTIONS=_void_tama_step,_void_tama_button,_u32t_tama_run_for,_main -sEXPORTED_RUNTIME_METHODS=ccall,cwrap
+EXPORTFLAGS += -sEXPORTED_FUNCTIONS=_void_tama_step,_void_tama_button,_u32t_tama_run_for,_u8tp_tama_get_memory,_main -sEXPORTED_RUNTIME_METHODS=ccall,cwrap
 PRELOAD_FILES = --preload-file tama.b
 
 TARGET = tama
