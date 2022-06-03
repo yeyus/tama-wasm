@@ -10,6 +10,7 @@
 #include "lib/tamalib.h"
 #include "program.h"
 
+#define TIMER_1HZ_PERIOD 32768
 #define ROM_PATH			"/tama.b"
 #define SLEEP_BYPASS 1
 
@@ -168,6 +169,28 @@ void void_tama_step(u32_t steps) {
 		tamalib_set_exec_mode(EXEC_MODE_STEP);
   	tamalib_step();
 	}
+}
+
+/**
+ * @brief Exported function that allows running the cpu for a certain amount of milliseconds
+ * 
+ * @param ms - milliseconds the cpu will be running without stopping
+ */
+u32_t u32t_tama_run_for(u32_t ms) {
+	if (ms < 1) return 0;
+	// 32768 ticks per 1000ms
+	u32_t run_for = TIMER_1HZ_PERIOD * ms / 1000;
+	state_t *state = tamalib_get_state();
+	u32_t target_ts = *(state->tick_counter) + run_for;
+	u32_t steps = 0;
+	while (*(state->tick_counter) < target_ts) {
+		tamalib_set_exec_mode(EXEC_MODE_STEP);
+		tamalib_step();
+		steps++;
+		state = tamalib_get_state();
+	}
+
+	return steps;
 }
 
 /**
