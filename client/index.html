@@ -3,42 +3,12 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Emscripten-Generated Code</title>
+    <title>Tama.wasm</title>
     <script type="text/javascript" src="interface.js"></script>
-    <style>
-      :root {
-        --tama-width: 400px;
-        --tama-background: bisque;
-      }
-
-      #canvas {
-        width: var(--tama-width);
-        aspect-ratio: 2/1;
-        image-rendering: pixelated;
-      }
-
-      .tama {
-        width: var(--tama-width);
-        background-color: var(--tama-background);
-      }
-
-      .tama .icon-bar {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-around;
-        width: auto;
-        padding: 10px 0;
-      }
-
-      .tama .icon-bar .icon {
-        height: 40px;
-        opacity: 0.2;
-      }
-
-      .tama .icon-bar .icon.on {
-        opacity: 1;
-      }
-    </style>
+    <script type="text/javascript" src="state.js"></script>
+    <script type="text/javascript" src="lib/base64encode.mjs"></script>
+    <script type="text/javascript" src="https://unpkg.com/pako@2.0.4/dist/pako.min.js"></script>
+    <link rel="stylesheet" href="styles/main.css">
   </head>
   <body>
     <div class="tama">
@@ -58,16 +28,23 @@
     </div>
     
     
+    
+    <button id="singlestep">Single step</button>
     <button id="somesteps">Run 1000 steps</button>
     <button id="run1Hz">Run 1Hz steps</button>
     <button id="audioStart">Audio Start</button>
+    <button id="coreDump">Core Dump</button>
     <label id="steps">Steps: <span>0</span></label>
     
     <button class="interface-btn" data-value="0">LEFT</button>
     <button class="interface-btn" data-value="1">MIDDLE</button>
     <button class="interface-btn" data-value="2">RIGHT</button>
 
+    <memory-table></memory-table>
+    <state-exporter></state-exporter>
+
     <script type="text/javascript">
+      
       let interval = -1;
       let stepCount = 0;
 
@@ -87,19 +64,13 @@
 
         window.pressButton = Module.cwrap('void_tama_button');
 
-        const _getMemory = Module.cwrap('u8tp_tama_get_memory', 'array', []);
-        window.getMemory = () => {
-          const ptrFromWasm = _getMemory();
-          return Module.HEAPU8.subarray(ptrFromWasm, ptrFromWasm + 464);
-        };
+        window.getState = Module.cwrap('statet_tama_get_cpu_state', 'number', []);
+        window.getStateSize = Module.cwrap('sizet_tama_get_cpu_state_size', 'number', []);
+
+        window.emulationState = new EmulationState();
       };
 
       const stepCountLabel = document.querySelector('#steps>span');
-      document.getElementById('somesteps').onclick = () => {
-        if (interval >= 0) clearInterval(interval);        
-        step(1000);
-        stepCountLabel.innerHTML = stepCount;
-      };
 
       const UPDATE_RATE_MS = 33;
       document.getElementById('run1Hz').onclick = () => {
@@ -110,6 +81,41 @@
       };
 
       document.getElementById('audioStart').onclick = () => window.Tama.audioStart();
+
+      const coreDump = () => {
+        window.emulationState.pull(window.Module, window.getState, window.getStateSize);
+        document.getElementsByTagName('memory-table')[0].update(window.emulationState);
+      };
+
+      /***** state-exporter *****/
+      const exportFn = () => {
+        window.emulationState.pull(window.Module, window.getState, window.getStateSize);
+        return window.emulationState.export();
+      }
+      document.getElementsByTagName('state-exporter')[0].exportFn = exportFn;
+
+      const importFn = (state) => {
+        window.emulationState.import(state);
+        window.emulationState.push(window.Module, window.getState, window.getStateSize);
+        coreDump();
+      }
+      document.getElementsByTagName('state-exporter')[0].importFn = importFn;
+
+      document.getElementById('coreDump').onclick = coreDump;
+      
+      document.getElementById('singlestep').onclick = () => {
+        if (interval >= 0) clearInterval(interval);        
+        step(1);
+        coreDump()
+        stepCountLabel.innerHTML = stepCount;
+      };
+
+      document.getElementById('somesteps').onclick = () => {
+        if (interval >= 0) clearInterval(interval);        
+        step(1000);
+        coreDump();
+        stepCountLabel.innerHTML = stepCount;
+      };
 
       document.querySelectorAll('.interface-btn').forEach(btn => {
         const value = parseInt(btn.dataset.value, 10);
@@ -135,6 +141,117 @@
 
       window.requestAnimationFrame(updateLCD);
     </script>
-    <script async type="text/javascript" src="../build/tama.js"></script>
+    <script type="text/javascript" src="../build/tama.js"></script>
+
+    <!-- Components -->
+    <script type="text/javascript" src="components/memory-table.js"></script>
+    <template id="memory-table">
+      <style>
+        h1 {
+          font-family: monospace;
+          font-size: 2em;
+        }
+
+        table {
+          font-family: monospace;
+        }
+
+        table tr {
+          text-align: left;
+        }
+
+        td.zero {
+          opacity: 0.6;
+        }
+
+        td.changed {
+          background-color: blueviolet;
+          color: white;
+        }
+      </style>
+      <h1>CPU State</h1>
+
+      <!-- CPU Registers -->
+      <table>
+        <tbody>
+          <tr>
+            <th>PC</th>
+            <td data-interpolate="pc" data-interpolate-type="hex">0x0000</td>
+            <th>NP</th>
+            <td data-interpolate="np" data-interpolate-type="hex">0x00</td>
+            <th>SP</th>
+            <td data-interpolate="sp" data-interpolate-type="hex">0x00</td>
+          </tr>
+          <tr>
+            <th>X</th>
+            <td data-interpolate="x" data-interpolate-type="hex">0x0000</td>
+            <th>Y</th>
+            <td data-interpolate="y" data-interpolate-type="hex">0x0000</td>
+            <th>A</th>
+            <td data-interpolate="a" data-interpolate-type="hex">0x00</td>
+            <th>B</th>
+            <td data-interpolate="b" data-interpolate-type="hex">0x00</td>
+          </tr>
+          <tr>
+            <th colspan="8">Flags</th>
+          </tr>
+          <tr>
+            <th>C</th>
+            <td data-interpolate="flags" data-interpolate-type="boolbin" data-interpolate-mask="1">0</td>
+            <th>Z</th>
+            <td data-interpolate="flags" data-interpolate-type="boolbin" data-interpolate-mask="2">0</td>
+            <th>D</th>
+            <td data-interpolate="flags" data-interpolate-type="boolbin" data-interpolate-mask="4">0</td>
+            <th>I</th>
+            <td data-interpolate="flags" data-interpolate-type="boolbin" data-interpolate-mask="7">0</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Memory -->
+      <table>
+        <thead>
+          <tr>
+            <th>addr</th>
+            <th>0</th>
+            <th>1</th>
+            <th>2</th>
+            <th>3</th>
+            <th>4</th>
+            <th>5</th>
+            <th>6</th>
+            <th>7</th>
+            <th>8</th>
+            <th>9</th>
+            <th>A</th>
+            <th>B</th>
+            <th>C</th>
+            <th>D</th>
+            <th>E</th>
+            <th>F</th>
+          </tr>
+        </thead>
+        <tbody class="dump"></tbody>
+      </table>
+    </template>
+
+    <script type="text/javascript" src="components/state-exporter.js"></script>
+    <template id="state-exporter">
+      <style>
+        h1, textarea {
+          font-family: monospace;
+        }
+        .actions {
+          display: flex;
+          flex-direction: row;
+        }
+      </style>
+      <h1>State Exporter</h1>
+      <div class="actions">
+        <button id="export">Export</button>
+        <button id="import">Import</button>
+      </div>
+      <textarea id="buffer"></textarea>
+    </template>
   </body>
 </html>

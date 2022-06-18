@@ -202,13 +202,16 @@ void void_tama_button(button_t btn, btn_state_t state) {
 }
 
 /**
- * @brief get the memory
+ * @brief dump the cpu state pointer
  * 
- * @return u8_t* 
+ * @return state_t*
  */
-u8_t * u8tp_tama_get_memory() {
-	state_t *state = tamalib_get_state();
-	return state->memory;
+state_t * statet_tama_get_cpu_state() {
+	return tamalib_get_state();
+}
+
+size_t * sizet_tama_get_cpu_state_size() {
+	return sizeof(state_t);
 }
 
 int main() {

@@ -1,0 +1,32 @@
+:root {
+  --tama-width: 400px;
+  --tama-background: bisque;
+}
+
+#canvas {
+  width: var(--tama-width);
+  aspect-ratio: 2/1;
+  image-rendering: pixelated;
+}
+
+.tama {
+  width: var(--tama-width);
+  background-color: var(--tama-background);
+}
+
+.tama .icon-bar {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  width: auto;
+  padding: 10px 0;
+}
+
+.tama .icon-bar .icon {
+  height: 40px;
+  opacity: 0.2;
+}
+
+.tama .icon-bar .icon.on {
+  opacity: 1;
+}
