@@ -175,6 +175,7 @@ void void_tama_step(u32_t steps) {
  * @brief Exported function that allows running the cpu for a certain amount of milliseconds
  * 
  * @param ms - milliseconds the cpu will be running without stopping
+ * @returns number of steps advancing
  */
 u32_t u32t_tama_run_for(u32_t ms) {
 	if (ms < 1) return 0;
@@ -198,6 +199,19 @@ u32_t u32t_tama_run_for(u32_t ms) {
  */
 void void_tama_button(button_t btn, btn_state_t state) {
 	tamalib_set_button(btn, state);
+}
+
+/**
+ * @brief dump the cpu state pointer
+ * 
+ * @return state_t*
+ */
+state_t * statet_tama_get_cpu_state() {
+	return tamalib_get_state();
+}
+
+size_t * sizet_tama_get_cpu_state_size() {
+	return sizeof(state_t);
 }
 
 int main() {

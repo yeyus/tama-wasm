@@ -23,7 +23,7 @@ class TamaObject {
     this.lcdUpdates.add(pixelToNumber(x,y));
   }
 
-  draw(canvas, completeDraw = false) {
+  draw(canvas, icons, completeDraw = false) {
     if (!canvas) throw new Error("Draw needs a canvas context to render to");
 
     if (completeDraw) {
@@ -41,7 +41,8 @@ class TamaObject {
       });
       this.lcdUpdates.clear();
     }
-    
+
+    this.icons.forEach((val, icon) => val ? icons[icon].classList.add('on') : icons[icon].classList.remove('on'));    
   }
 
   setIcon(icon, val) {
@@ -57,8 +58,6 @@ class TamaObject {
   
   setAudioFrequency(freq) {
     if(!this.audioCtx) return;
-
-    console.log('Audio Freq: ', freq/10);
     this.oscillator.frequency.setValueAtTime(freq/10, this.audioCtx.currentTime);
   }
 
@@ -66,12 +65,10 @@ class TamaObject {
     if (!this.audioCtx) return;
 
     if (!en && this.audioPlaying) {
-      console.log('[audio] stop');
       this.oscillator.disconnect(this.audioCtx.destination);
       this.audioPlaying = false;
     }
     if (en && !this.audioPlaying) {
-      console.log('[audio] start');
       this.oscillator.connect(this.audioCtx.destination);
       this.audioPlaying = true;
     }
