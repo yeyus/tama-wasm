@@ -1,3 +1,5 @@
+import { base64EncArr, base64DecToArr } from './lib/base64encode.mjs';
+
 const VERSION = "tama0001";
 
 class DataType {}
@@ -53,7 +55,7 @@ const TAGS = [
   ['memory', new U8ArrayDataType(464)]
 ];
 
-class EmulationState {
+export class EmulationState {
   constructor() {
     this.version = VERSION;
   }
