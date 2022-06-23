@@ -93,7 +93,7 @@ static void hal_update_screen(void)
 }
 
 EM_JS(void, set_lcd_matrix, (u8_t x, u8_t y, bool_t val), {
-	!!Tama && Tama.setLCD(x, y, val);
+	Module && Module.tamaLib && Module.tamaLib.setLCDMatrix(x, y, val);
 });
 
 static void hal_set_lcd_matrix(u8_t x, u8_t y, bool_t val)
@@ -104,7 +104,7 @@ static void hal_set_lcd_matrix(u8_t x, u8_t y, bool_t val)
 }
 
 EM_JS(void, set_lcd_icon, (u8_t icon, bool_t val), {
-	!!Tama && Tama.setIcon(icon, val);
+	Module && Module.tamaLib && Module.tamaLib.setLCDIcon(icon, val);
 });
 
 static void hal_set_lcd_icon(u8_t icon, bool_t val)
@@ -115,7 +115,7 @@ static void hal_set_lcd_icon(u8_t icon, bool_t val)
 }
 
 EM_JS(void, set_audio_frequency, (u32_t freq), {
-	!!Tama && Tama.setAudioFrequency(freq);
+	Module && Module.tamaLib && Module.tamaLib.setAudioFrequency(freq);
 });
 
 static void hal_set_frequency(u32_t freq)
@@ -126,7 +126,7 @@ static void hal_set_frequency(u32_t freq)
 }
 
 EM_JS(void, set_audio_play, (bool_t en), {
-	!!Tama && Tama.setAudioPlay(en);
+	Module && Module.tamaLib && Module.tamaLib.setAudioPlay(en);
 });
 
 
