@@ -156,9 +156,78 @@ export class TamaControls extends LitElement {
         opacity: 1;
       }
 
-      .buttons .interface-btn {
+      .buttons {        
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        position: relative;
+        z-index: 10;
+      }
+
+      .interface-btn {
+        aspect-ratio: 1/1;
+        background-color: #f7f7f7;
+        background-image: -webkit-gradient(linear, left top, left bottom, from(#f7f7f7), to(#e7e7e7));
+        background-image: -webkit-linear-gradient(top, #f7f7f7, #e7e7e7); 
+        background-image: -moz-linear-gradient(top, #f7f7f7, #e7e7e7); 
+        background-image: -ms-linear-gradient(top, #f7f7f7, #e7e7e7); 
+        background-image: -o-linear-gradient(top, #f7f7f7, #e7e7e7); 
+        border: solid 1px transparent;
+        border-radius: 50%;
+        box-shadow: 0px 3px 8px #aaa, inset 0px 2px 3px #fff;
+        display: block;
+        flex: 1;
         font-size: 1.5em;
+        position: relative;
+        margin: 8%;
         text-weight: bold;
+      }
+
+      .interface-btn:link, .interface-btn:visited {
+        display: block;
+        text-decoration: none;
+        background-color: #f7f7f7;
+        background-image: -webkit-gradient(linear, left top, left bottom, from(#f7f7f7), to(#e7e7e7));
+        background-image: -webkit-linear-gradient(top, #f7f7f7, #e7e7e7); 
+        background-image: -moz-linear-gradient(top, #f7f7f7, #e7e7e7); 
+        background-image: -ms-linear-gradient(top, #f7f7f7, #e7e7e7); 
+        background-image: -o-linear-gradient(top, #f7f7f7, #e7e7e7); 
+        color: #a7a7a7;
+        margin: 36px;
+        width: 144px;
+        height: 144px;
+        position: relative;
+        text-align: center;
+        line-height: 144px;
+        border-radius: 50%;
+        box-shadow: 0px 3px 8px #aaa, inset 0px 2px 3px #fff;
+        border: solid 1px transparent;
+      }
+
+      .interface-btn:before {
+        content: "";
+        display: block;
+        background: #fff;
+        border-top: 2px solid #ddd;
+        position: absolute;
+        top: -18px;
+        left: -18px;
+        bottom: -18px;
+        right: -18px;
+        z-index: -1;
+        border-radius: 50%;
+        box-shadow: inset 0px 8px 48px #ddd;
+      }
+
+      .interface-btn:active {
+        box-shadow: 0px 3px 4px #aaa inset, 0px 2px 3px #fff;
+      }
+
+      .interface-btn:hover {
+        text-decoration: none;
+        color: #555;
+        background: #f5f5f5;
       }
     `;
   }
@@ -179,12 +248,12 @@ export class TamaControls extends LitElement {
           <img class="icon" src="assets/discipline.svg" alt="Discipline" data-icon=6 />
           <img class="icon" src="assets/attention.svg" alt="Attention" data-icon=7 />
         </div>
-      </div>
-      <div class="buttons">
-        <button class="interface-btn" data-value="0" @mousedown="${this._handleButton.bind(this, 0, 1)}" @mouseup="${this._handleButton.bind(this, 0, 0)}">LEFT</button>
-        <button class="interface-btn" data-value="1" @mousedown="${this._handleButton.bind(this, 1, 1)}" @mouseup="${this._handleButton.bind(this, 1, 0)}">MIDDLE</button>
-        <button class="interface-btn" data-value="2" @mousedown="${this._handleButton.bind(this, 2, 1)}" @mouseup="${this._handleButton.bind(this, 2, 0)}">RIGHT</button>
-      </div>      
+        <div class="buttons">
+          <button class="interface-btn" @mousedown="${this._handleButton.bind(this, 0, 1)}" @mouseup="${this._handleButton.bind(this, 0, 0)}"></button>
+          <button class="interface-btn" @mousedown="${this._handleButton.bind(this, 1, 1)}" @mouseup="${this._handleButton.bind(this, 1, 0)}"></button>
+          <button class="interface-btn" @mousedown="${this._handleButton.bind(this, 2, 1)}" @mouseup="${this._handleButton.bind(this, 2, 0)}"></button>
+        </div>
+      </div>            
     `;
   }
 }
