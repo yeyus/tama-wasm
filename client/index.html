@@ -36,26 +36,27 @@
       const cpuViewerComponent = document.getElementsByTagName('cpu-viewer')[0];
 
       stateExporterComponent.addEventListener(EVENT_EXPORT_CLICK, function(e) {
-        debugger;
         const emulationState = tamaLib.emulationState;
         emulationState.pull(tamaWASM, tamaLib.getState, tamaLib.getStateSize);
         e.target.buffer = emulationState.export();
       });
 
       stateExporterComponent.addEventListener(EVENT_IMPORT_CLICK, function(e) {
-        debugger;
         const emulationState = tamaLib.emulationState;
         emulationState.import(e.target.buffer);
         emulationState.push(tamaWASM, tamaLib.getState, tamaLib.getStateSize);
         coreDump();
       });
 
+      // const updateStepCounter = () => stepCountLabel.innerHTML = tamaLib.stepCount;
+      const updateStepCounter = () => {};
+
       // run at real time speed
       const UPDATE_RATE_MS = 33;      
       document.getElementById('run1Hz').onclick = () => {
         interval = setInterval(() => {
           tamaLib.runFor(UPDATE_RATE_MS);
-          stepCountLabel.innerHTML = tamaLib.stepCount;
+          updateStepCounter();
         }, UPDATE_RATE_MS);
       };
 
@@ -63,14 +64,14 @@
         if (interval >= 0) clearInterval(interval);        
         tamaLib.step(1);
         coreDump()
-        stepCountLabel.innerHTML = tamaLib.stepCount;
+        updateStepCounter();
       };
 
       document.getElementById('somesteps').onclick = () => {
         if (interval >= 0) clearInterval(interval);        
         tamaLib.step(1000);
         coreDump();
-        stepCountLabel.innerHTML = tamaLib.stepCount;
+        updateStepCounter();
       };
 
       const coreDump = () => {
