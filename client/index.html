@@ -26,9 +26,11 @@
 
     <script type="module">
       import tamaWASM from './modules/wasm-esm-decorator.mjs';
+      import StateManager from './modules/state-manager.mjs';
       import { EVENT_EXPORT_CLICK, EVENT_IMPORT_CLICK } from './components/state-exporter.js';
 
       let interval = -1;
+      const stateManager = new StateManager(window.localStorage);
 
       const { tamaLib } = tamaWASM;
       const stepCountLabel = document.querySelector('#steps>span');
@@ -74,14 +76,33 @@
         updateStepCounter();
       };
 
-      const coreDump = () => {
+      const pullState = () => {
         const emulationState = tamaWASM.tamaLib.emulationState;
         emulationState.pull(tamaWASM, tamaLib.getState, tamaLib.getStateSize);
+
+        return emulationState;
+      }
+      const coreDump = () => {
+        const emulationState = pullState();
         cpuViewerComponent.snapshot(emulationState);
       };
+
       document.getElementById('coreDump').onclick = coreDump;
 
       document.getElementById('audioStart').onclick = () => tamaWASM.tamaLib.physicalInterface.audioStart();
+
+      window.addEventListener('visibilitychange', (e) => {
+        if (document.visibilityState === 'visible') {
+          // change into view
+          console.log('[VisibilityObserver] is in view');
+        } else {
+          // out of view
+          console.log('[VisibilityObserver] is out of view');
+          // Save current state
+          const emulationState = pullState();
+          stateManager.saveState(emulationState);
+        }
+      });
 
       window.Module = tamaWASM;
     </script>
